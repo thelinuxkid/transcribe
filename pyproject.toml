@@ -15,8 +15,8 @@ dependencies = [
 ]
 
 [project.scripts]
-transcribe = "transcribe.cli_transcribe:main"
-diarize = "transcribe.cli_diarize:main"
+transcribe = "transcribe.cli.transcribe:main"
+diarize = "transcribe.cli.diarize:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/transcribe"]

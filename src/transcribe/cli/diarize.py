@@ -12,10 +12,10 @@ import time
 from collections import Counter
 from pathlib import Path
 
-from .auth import DIARIZATION_AUTH_ERROR, HF_TOKEN_ERROR, get_hf_token
-from .config import load_config
-from .diarization import DIARIZE_DEVICE, run_diarization
-from .output import write_outputs
+from ..auth import DIARIZATION_AUTH_ERROR, HF_TOKEN_ERROR, get_hf_token
+from ..config import load_config
+from ..diarization import DIARIZE_DEVICE, run_diarization
+from ..output import write_outputs
 
 
 def parse_args():

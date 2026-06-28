@@ -150,11 +150,12 @@ m4a, mp3, wav, mp4, flac, ogg, aac, wma, opus
 
 ```
 src/transcribe/
-  cli_transcribe.py   Main transcription CLI (transcribe → align → diarize)
-  cli_diarize.py      Standalone diarization CLI for existing transcripts
+  cli/
+    transcribe.py     Main transcription CLI (transcribe → align → diarize)
+    diarize.py        Standalone diarization CLI for existing transcripts
+  auth.py             HuggingFace token resolution
   config.py           Loads ~/.transcriberc and provides defaults
   diarization.py      pyannote speaker diarization pipeline
-  output.py           Writes transcripts in 4 formats (md, txt, json, srt)
-  auth.py             HuggingFace token resolution
   formatting.py       Timestamp formatting utilities
+  output.py           Writes transcripts in 4 formats (md, txt, json, srt)
 ```
