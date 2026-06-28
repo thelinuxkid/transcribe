@@ -73,6 +73,10 @@ echo ""
 echo "==> Installing huggingface_hub CLI..."
 pip install huggingface_hub soundfile --quiet
 
+echo ""
+echo "==> Installing enric-transcribe package (editable)..."
+pip install -e "$(dirname "$0")" --quiet
+
 # ── Verify ───────────────────────────────────────────────────────────────────
 echo ""
 echo "==> Verifying installation..."
@@ -100,6 +104,7 @@ echo "     huggingface-cli login"
 echo ""
 echo "Then transcribe:"
 echo "  conda activate ${ENV_NAME}"
-echo "  python transcribe.py meeting.m4a"
-echo "  python transcribe.py meeting.m4a --speakers 4"
+echo "  transcribe meeting.m4a"
+echo "  transcribe meeting.m4a --speakers 4 --diarize"
+echo "  diarize meeting.m4a transcripts/meeting.json --speakers 4"
 echo ""

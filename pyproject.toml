@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "enric-transcribe"
+version = "0.1.0"
+description = "Multi-speaker audio transcription with whispermlx and pyannote on Apple Silicon"
+requires-python = ">=3.11"
+dependencies = [
+    "whispermlx",
+    "soundfile",
+    "huggingface_hub",
+    "torch>=2.0",
+]
+
+[project.scripts]
+transcribe = "transcribe.cli_transcribe:main"
+diarize = "transcribe.cli_diarize:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/transcribe"]
