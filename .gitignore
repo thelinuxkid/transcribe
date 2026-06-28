@@ -9,9 +9,6 @@
 *.wma
 *.opus
 
-# Audio corpus directories
-Gerardo Schmedling/
-
 # Transcript outputs
 transcripts/
 
