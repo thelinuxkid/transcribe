@@ -51,7 +51,7 @@ conda activate transcribe
 ### Transcribe audio
 
 ```bash
-# Basic transcription (Spanish, large-v3-turbo model)
+# Basic transcription (English, large-v3-turbo model)
 transcribe meeting.m4a
 
 # With speaker diarization
@@ -117,7 +117,7 @@ transcribe <audio> [options]
   audio                   Path to audio file or directory
 
   --model MODEL           Whisper model (default: large-v3-turbo)
-  --language LANG         Language code (default: es)
+  --language LANG         Language code (default: en)
   --diarize               Enable speaker diarization
   --speakers N            Exact number of speakers
   --min-speakers N        Min speakers for auto-detection (default: 2)

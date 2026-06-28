@@ -5,7 +5,7 @@ from pathlib import Path
 CONFIG_PATH = Path.home() / ".transcriberc"
 
 DEFAULTS = {
-    "language": "es",
+    "language": "en",
     "model": "large-v3-turbo",
     "output": "./transcripts",
     "min_speakers": 2,
