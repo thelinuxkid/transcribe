@@ -32,21 +32,19 @@ else
   INSTALL_FFMPEG=false
 fi
 
+# ── Init conda shell hook (must run before conda activate) ──────────────────
+eval "$(conda shell.bash hook)"
+
 # ── Create or update conda env ───────────────────────────────────────────────
 if conda env list | grep -q "^${ENV_NAME} "; then
   echo ""
   echo "==> Conda env '${ENV_NAME}' already exists. Updating..."
-  conda activate "${ENV_NAME}"
 else
   echo ""
   echo "==> Creating conda env '${ENV_NAME}' with Python 3.11..."
-  # Python 3.11: safest for pyannote-audio 4.x deps
-  # torch 2.8 (pinned by whispermlx) is available on conda-forge for arm64
   conda create -n "${ENV_NAME}" python=3.11 -c conda-forge -y
 fi
 
-# Activate — works in both bash and zsh
-eval "$(conda shell.bash hook)"
 conda activate "${ENV_NAME}"
 echo "==> Activated: $(which python) ($(python --version))"
 
