@@ -18,7 +18,7 @@ from pathlib import Path
 
 from ..auth import DIARIZATION_AUTH_ERROR, HF_TOKEN_ERROR, get_hf_token
 from ..config import load_config
-from ..diarization import DIARIZE_DEVICE, run_diarization
+from ..diarization import DIARIZE_DEVICE, load_diarization_pipeline, run_diarization
 from ..output import write_outputs
 
 AUDIO_EXTENSIONS = {".m4a", ".mp3", ".wav", ".mp4", ".flac", ".ogg", ".aac", ".wma", ".opus"}
@@ -87,7 +87,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def _run_diarization_safe(audio_path, segments, args):
+def _run_diarization_safe(audio_path, segments, args, pipeline=None):
     hf_token = get_hf_token(args.hf_token)
     if not hf_token:
         print(HF_TOKEN_ERROR)
@@ -97,6 +97,7 @@ def _run_diarization_safe(audio_path, segments, args):
         diarized_segments, _ = run_diarization(
             audio_path, segments, hf_token,
             args.speakers, args.min_speakers, args.max_speakers,
+            pipeline=pipeline,
         )
         return diarized_segments
     except Exception as e:
@@ -106,7 +107,9 @@ def _run_diarization_safe(audio_path, segments, args):
         return None
 
 
-def transcribe_file(audio_path: Path, args, output_root: Path):
+def transcribe_file(audio_path: Path, args, output_root: Path,
+                    whisper_model, align_model, align_metadata,
+                    diarize_pipeline):
     import whispermlx
 
     output_dir = output_root / audio_path.parent
@@ -128,7 +131,8 @@ def transcribe_file(audio_path: Path, args, output_root: Path):
             print(f"\n  Diarize-only: {audio_path} (transcription exists, adding speaker labels)")
             with open(json_path, "r", encoding="utf-8") as f:
                 segments = json.load(f)
-            diarized_segments = _run_diarization_safe(audio_path, segments, args)
+            diarized_segments = _run_diarization_safe(audio_path, segments, args,
+                                                      pipeline=diarize_pipeline)
             if diarized_segments:
                 print(f"\n── Writing diarized output to {output_dir}/")
                 write_outputs(diarized_segments, output_dir, stem, diarized=True)
@@ -151,13 +155,7 @@ def transcribe_file(audio_path: Path, args, output_root: Path):
     print("── Step 1/3: Transcribing (MLX)...")
     t0 = time.time()
 
-    model = whispermlx.load_model(
-        args.model,
-        device="cpu",
-        language=args.language,
-        compute_type="float16",
-    )
-    result = model.transcribe(
+    result = whisper_model.transcribe(
         str(audio_path),
         batch_size=args.batch_size,
         language=args.language,
@@ -166,7 +164,6 @@ def transcribe_file(audio_path: Path, args, output_root: Path):
     t1 = time.time()
     print(f"   Done in {t1 - t0:.1f}s  ({len(result['segments'])} segments)")
 
-    del model
     gc.collect()
 
     # Step 2: Word-level alignment
@@ -174,19 +171,14 @@ def transcribe_file(audio_path: Path, args, output_root: Path):
     t0 = time.time()
 
     try:
-        model_a, metadata = whispermlx.load_align_model(
-            language_code=args.language,
-            device="cpu",
-        )
         result = whispermlx.align(
             result["segments"],
-            model_a,
-            metadata,
+            align_model,
+            align_metadata,
             str(audio_path),
             device="cpu",
             return_char_alignments=False,
         )
-        del model_a
         gc.collect()
         print(f"   Done in {time.time() - t0:.1f}s")
     except Exception as e:
@@ -198,16 +190,51 @@ def transcribe_file(audio_path: Path, args, output_root: Path):
 
     # Step 3: Diarization (pyannote → MPS)
     if args.diarize:
-        diarized_segments = _run_diarization_safe(audio_path, result["segments"], args)
+        diarized_segments = _run_diarization_safe(audio_path, result["segments"], args,
+                                                  pipeline=diarize_pipeline)
         if diarized_segments:
             print(f"\n── Writing diarized output to {output_dir}/")
             write_outputs(diarized_segments, output_dir, stem, diarized=True)
+        gc.collect()
+        if DIARIZE_DEVICE == "mps":
+            import torch
+            torch.mps.empty_cache()
     else:
         print("\n── Skipping diarization (use --diarize to enable)")
 
     total = time.time() - total_start
     print(f"\n✓ Finished in {total:.1f}s ({total/60:.1f} min)")
     print()
+
+
+def _preload_models(args):
+    import whispermlx
+
+    print("── Loading models...")
+    t0 = time.time()
+
+    whisper_model = whispermlx.load_model(
+        args.model,
+        device="cpu",
+        language=args.language,
+        compute_type="float16",
+    )
+
+    align_model, align_metadata = whispermlx.load_align_model(
+        language_code=args.language,
+        device="cpu",
+    )
+
+    diarize_pipeline = None
+    if args.diarize:
+        hf_token = get_hf_token(args.hf_token)
+        if hf_token:
+            diarize_pipeline = load_diarization_pipeline(hf_token)
+        else:
+            print(HF_TOKEN_ERROR)
+
+    print(f"   Models loaded in {time.time() - t0:.1f}s\n")
+    return whisper_model, align_model, align_metadata, diarize_pipeline
 
 
 def main():
@@ -225,9 +252,11 @@ def main():
         sys.exit(1)
 
     output_root = Path(args.output)
+    whisper_model, align_model, align_metadata, diarize_pipeline = _preload_models(args)
 
     if input_path.is_file():
-        transcribe_file(input_path, args, output_root)
+        transcribe_file(input_path, args, output_root,
+                        whisper_model, align_model, align_metadata, diarize_pipeline)
     elif input_path.is_dir():
         audio_files = sorted(
             p for p in input_path.rglob("*")
@@ -241,7 +270,8 @@ def main():
             print(f"\n{'='*60}")
             print(f"  [{i}/{len(audio_files)}] {audio_file}")
             print(f"{'='*60}")
-            transcribe_file(audio_file, args, output_root)
+            transcribe_file(audio_file, args, output_root,
+                            whisper_model, align_model, align_metadata, diarize_pipeline)
     else:
         print(f"ERROR: {input_path} is not a file or directory")
         sys.exit(1)

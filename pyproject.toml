@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "enric-transcribe"
+name = "transcribe"
 version = "0.1.0"
 description = "Multi-speaker audio transcription with whispermlx and pyannote on Apple Silicon"
 requires-python = ">=3.11"

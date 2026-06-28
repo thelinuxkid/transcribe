@@ -72,7 +72,7 @@ echo "==> Installing huggingface_hub CLI..."
 pip install huggingface_hub soundfile --quiet
 
 echo ""
-echo "==> Installing enric-transcribe package (editable)..."
+echo "==> Installing transcribe package (editable)..."
 pip install -e "$(dirname "$0")" --quiet
 
 # ── Verify ───────────────────────────────────────────────────────────────────
