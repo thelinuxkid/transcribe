@@ -1,0 +1,35 @@
+# Audio files
+*.m4a
+*.mp3
+*.wav
+*.mp4
+*.flac
+*.ogg
+*.aac
+*.wma
+*.opus
+
+# Transcript outputs
+transcripts/
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment
+.env
+.venv/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
