@@ -1,6 +1,6 @@
 #!/bin/bash
 # setup.sh — whispermlx transcription environment (conda)
-# M3 MacBook Air · Spanish meeting audio · multi-speaker
+# Apple Silicon Mac · multi-speaker audio transcription
 # Run once: bash setup.sh
 
 set -e
@@ -94,7 +94,7 @@ echo "  1. Create a free account at https://huggingface.co"
 echo "  2. Go to https://huggingface.co/settings/tokens"
 echo "     → New token → name it anything → Access: Read"
 echo "  3. Accept pyannote model terms at (one-time, in browser):"
-echo "     → https://huggingface.co/pyannote/speaker-diarization-3.1"
+echo "     → https://huggingface.co/pyannote/speaker-diarization-community-1"
 echo "     → https://huggingface.co/pyannote/segmentation-3.0"
 echo "  4. Save your token:"
 echo "     conda activate ${ENV_NAME}"
