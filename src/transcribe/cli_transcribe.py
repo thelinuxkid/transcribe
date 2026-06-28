@@ -17,6 +17,7 @@ import traceback
 from pathlib import Path
 
 from .auth import DIARIZATION_AUTH_ERROR, HF_TOKEN_ERROR, get_hf_token
+from .config import load_config
 from .diarization import DIARIZE_DEVICE, run_diarization
 from .output import write_outputs
 
@@ -24,19 +25,20 @@ AUDIO_EXTENSIONS = {".m4a", ".mp3", ".wav", ".mp4", ".flac", ".ogg", ".aac", ".w
 
 
 def parse_args():
+    cfg = load_config()
     parser = argparse.ArgumentParser(
         description="Transcribe audio with speaker diarization"
     )
     parser.add_argument("audio", help="Path to audio file or directory to transcribe recursively")
     parser.add_argument(
         "--model",
-        default="large-v3-turbo",
-        help="Whisper model (default: large-v3-turbo). Options: large-v3, large-v3-turbo, medium",
+        default=cfg["model"],
+        help=f"Whisper model (default: {cfg['model']})",
     )
     parser.add_argument(
         "--language",
-        default="es",
-        help="Language code (default: es for Spanish)",
+        default=cfg["language"],
+        help=f"Language code (default: {cfg['language']})",
     )
     parser.add_argument(
         "--speakers",
@@ -47,19 +49,19 @@ def parse_args():
     parser.add_argument(
         "--min-speakers",
         type=int,
-        default=2,
-        help="Minimum speakers for auto-detection (default: 2)",
+        default=cfg["min_speakers"],
+        help=f"Minimum speakers for auto-detection (default: {cfg['min_speakers']})",
     )
     parser.add_argument(
         "--max-speakers",
         type=int,
-        default=8,
-        help="Maximum speakers for auto-detection (default: 8)",
+        default=cfg["max_speakers"],
+        help=f"Maximum speakers for auto-detection (default: {cfg['max_speakers']})",
     )
     parser.add_argument(
         "--output",
-        default="./transcripts",
-        help="Output directory (default: ./transcripts)",
+        default=cfg["output"],
+        help=f"Output directory (default: {cfg['output']})",
     )
     parser.add_argument(
         "--hf-token",
@@ -79,8 +81,8 @@ def parse_args():
     parser.add_argument(
         "--batch-size",
         type=int,
-        default=8,
-        help="Batch size for transcription (default: 8, reduce if OOM)",
+        default=cfg["batch_size"],
+        help=f"Batch size for transcription (default: {cfg['batch_size']}, reduce if OOM)",
     )
     return parser.parse_args()
 

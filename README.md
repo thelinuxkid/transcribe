@@ -90,7 +90,24 @@ Transcripts are written to `./transcripts/` by default (configurable with `--out
 
 When diarization is enabled, an additional set of files is written with a `.diarized` suffix (e.g. `name.diarized.md`).
 
+## Configuration
+
+Defaults can be overridden in `~/.transcriberc` (TOML format). CLI flags take precedence over the config file.
+
+```toml
+language = "en"
+model = "large-v3-turbo"
+output = "./transcripts"
+min_speakers = 2
+max_speakers = 8
+batch_size = 8
+```
+
+All keys are optional — only set what you want to change.
+
 ## CLI reference
+
+Defaults shown below are the built-in values. If `~/.transcriberc` is present, its values are used instead.
 
 ### `transcribe`
 
@@ -135,6 +152,7 @@ m4a, mp3, wav, mp4, flac, ogg, aac, wma, opus
 src/transcribe/
   cli_transcribe.py   Main transcription CLI (transcribe → align → diarize)
   cli_diarize.py      Standalone diarization CLI for existing transcripts
+  config.py           Loads ~/.transcriberc and provides defaults
   diarization.py      pyannote speaker diarization pipeline
   output.py           Writes transcripts in 4 formats (md, txt, json, srt)
   auth.py             HuggingFace token resolution

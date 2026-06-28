@@ -13,17 +13,21 @@ from collections import Counter
 from pathlib import Path
 
 from .auth import DIARIZATION_AUTH_ERROR, HF_TOKEN_ERROR, get_hf_token
+from .config import load_config
 from .diarization import DIARIZE_DEVICE, run_diarization
 from .output import write_outputs
 
 
 def parse_args():
+    cfg = load_config()
     parser = argparse.ArgumentParser(description="Add speaker diarization to existing transcript")
     parser.add_argument("audio", help="Original audio file (.m4a, .mp3, .wav)")
     parser.add_argument("transcript", help="Existing transcript JSON from whispermlx")
     parser.add_argument("--speakers", type=int, default=None, help="Exact number of speakers (improves accuracy)")
-    parser.add_argument("--min-speakers", type=int, default=2)
-    parser.add_argument("--max-speakers", type=int, default=8)
+    parser.add_argument("--min-speakers", type=int, default=cfg["min_speakers"],
+                        help=f"Min speakers for auto-detection (default: {cfg['min_speakers']})")
+    parser.add_argument("--max-speakers", type=int, default=cfg["max_speakers"],
+                        help=f"Max speakers for auto-detection (default: {cfg['max_speakers']})")
     parser.add_argument("--hf-token", default=None, help="HuggingFace token (falls back to cached login)")
     return parser.parse_args()
 
